@@ -1,0 +1,82 @@
+@startuml CAR-MFL核心技术流程图
+
+title CAR-MFL: 跨模态检索增强的多模态联邦学习
+
+' 定义参与者
+participant "仅图像客户端" as ImgClient
+participant "检索模块" as Retrieval
+database "公共数据集" as PublicData
+participant "服务器" as Server
+
+' 第一部分：特征提取
+note over Server, PublicData
+  **第一阶段：特征提取**
+  服务器从公共数据集中提取特征向量
+end note
+
+Server -> Server: 将模型设置为评估模式
+Server -> PublicData: 请求公共数据集样本
+PublicData --> Server: 返回图像、文本和标签
+Server -> Server: 提取图像特征向量
+Server -> Server: 提取文本特征向量
+Server -> Server: 存储特征向量和对应标签
+
+' 第二部分：跨模态检索
+note over ImgClient, Retrieval
+  **第二阶段：跨模态检索**
+  单模态客户端为缺失模态找到最相似的补充数据
+end note
+
+ImgClient -> ImgClient: 提取本地图像特征
+ImgClient -> Retrieval: 发送本地图像特征
+Retrieval -> Retrieval: 计算与公共数据集特征的距离
+
+alt 使用标签精炼
+  Retrieval -> Retrieval: 找到Top-K最相似的特征向量
+  Retrieval -> Retrieval: 计算标签Jaccard相似度
+  Retrieval -> Retrieval: 选择标签最相似的样本
+else 不使用标签精炼
+  Retrieval -> Retrieval: 找到最相似的特征向量
+end
+
+Retrieval --> ImgClient: 返回最佳匹配的索引
+ImgClient -> ImgClient: 建立本地图像到公共文本的映射
+
+' 第三部分：训练过程
+note over ImgClient, PublicData
+  **第三阶段：使用检索数据训练**
+  单模态客户端使用原始数据和检索到的缺失模态数据进行训练
+end note
+
+ImgClient -> ImgClient: 加载训练批次(图像、标签)
+ImgClient -> ImgClient: 获取批次中图像的索引
+ImgClient -> PublicData: 根据映射关系请求对应的文本
+PublicData --> ImgClient: 返回检索到的文本
+ImgClient -> ImgClient: 将原始图像与检索文本配对
+ImgClient -> ImgClient: 使用配对数据训练模型
+
+' 第四部分：模型聚合
+note over ImgClient, Server
+  **第四阶段：差异化模型聚合**
+  服务器根据模态类型使用不同权重聚合模型参数
+end note
+
+Server -> Server: 收集所有客户端模型
+Server -> Server: 计算客户端权重(基于数据量)
+Server -> Server: 根据alpha参数调整单模态客户端权重
+
+note right of Server
+  对于文本编码器参数:
+  使用调整后的图像客户端权重
+  
+  对于图像编码器参数:
+  使用调整后的文本客户端权重
+  
+  对于其他参数:
+  使用正常权重
+end note
+
+Server -> Server: 计算加权平均参数
+Server -> Server: 更新全局模型
+
+@enduml

@@ -11,13 +11,21 @@ from algorithms.FedAvgIn import FedAvgIn, FedAvgInRAG, FedAvgNoPublic
 
 parser = argparse.ArgumentParser(description='Federated Learning')
 
+# 设置随机种子 确保实验结果可复现
 def set_seed(seed):
+     # 设置 PyTorch 的 CPU 随机种子
     torch.manual_seed(seed)
+    # 设置 PyTorch 的 GPU 随机种子
     torch.cuda.manual_seed(seed)
+    # 设置 NumPy 的随机种子
     np.random.seed(seed)
+    # 设置 Python 的随机种子
     random.seed(seed)
     
     #To let the cuDNN use the same convolution every time
+    # 设置 PyTorch 的 cuDNN 随机种子
+    #     deterministic = True: 确保每次卷积运算使用相同的算法
+    # benchmark = False: 禁用 cuDNN 的自动调优功能
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
