@@ -21,7 +21,7 @@ def _print(msg, verbose):
     if verbose:
         print(msg)
 
-
+# 配置文件加载器
 def _loader(config_path: str,
             verbose: bool = False) -> dict:
     """A simple serializer loader.
@@ -33,6 +33,7 @@ def _loader(config_path: str,
     with open(config_path, 'r') as fin:
         try:
             # return yaml.load(fin)
+            # 加载yaml配置文件
             return yaml.safe_load(fin)
         except YAMLError:
             _print('failed to load from yaml. Try pickle loader', verbose)
@@ -172,5 +173,7 @@ def parse_config(config_fname: str,
             else:
                 _config = _config[_key]
 
+
+    #把字典转换为按点号访问的对象
     config = munch.munchify(config)
     return config
