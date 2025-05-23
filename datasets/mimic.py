@@ -30,6 +30,7 @@ class MimicMultiModal(Dataset):
             loaded_data = pickle.load(pickle_file)
         self.data = loaded_data[split]
         if split=="train":
+            # 训练集随机变换，数据增强
             self.transforms = transforms.Compose([
                     transforms.Resize((224, 224)),  # Resize the image to a fixed size (e.g., 224x224)
                     transforms.RandomHorizontalFlip(),  # Randomly flip the image horizontally for data augmentation
