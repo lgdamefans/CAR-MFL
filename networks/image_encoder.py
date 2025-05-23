@@ -43,7 +43,7 @@ class EncoderResNet(nn.Module):
 
         # 移除原始ResNet的全连接层
         self.cnn.fc = nn.Sequential()
-        # 设置所有参数可训练
+        # 设置所有参数可训练 确保所有参数可以在训练中更新
         for idx, param in enumerate(self.cnn.parameters()):
             param.requires_grad = True
 
