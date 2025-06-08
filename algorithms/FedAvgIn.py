@@ -230,6 +230,7 @@ class FedAvgInRAG(FedAvgIn):
                 frame = frame.cuda()
                 with torch.no_grad():
                     output = self.server.model(self.server.tokenizer, frame, report)
+                # 特征提取和存储
                 img_vec.extend(output["image_features"].cpu().numpy())
                 txt_vec.extend(output["caption_features"].cpu().numpy())
                 idxs.extend(idx)
